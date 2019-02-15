@@ -1,0 +1,42 @@
+PARAM (
+    [string] $ZipFilesPath = "C:\Users\Richie\Desktop\TestStudentsZips",
+    [string] $UnzipPath = "C:\Users\Richie\Desktop\TestStudentsSol"
+)
+
+$ErrorActionPreference = "SilentlyContinue"
+$Shell = New-Object -com Shell.Application
+$Location = $Shell.NameSpace($UnzipPath)
+ 
+$ZipFiles = Get-Childitem $ZipFilesPath -Recurse -Include *.ZIP
+ 
+$progress = 1
+foreach ($ZipFile in $ZipFiles) {
+        If(!(test-path ($UnzipPath + "\" + $ZipFile.BaseName)))
+        {
+            New-Item -ItemType Directory -Force -Path ($UnzipPath + "\" + $ZipFile.BaseName)
+        }
+
+    Write-Progress -Activity "Unzipping to $($UnzipPath)" -PercentComplete (($progress / ($ZipFiles.Count + 1)) * 100) -CurrentOperation $ZipFile.FullName -Status "File $($Progress) of $($ZipFiles.Count)"
+    $ZipFolder = $Shell.NameSpace($ZipFile.fullname)
+
+    Expand-Archive -Path $ZipFile -Destination  ($UnzipPath + "\" + $ZipFile.BaseName)
+
+        If(test-path ($UnzipPath + "\" + $ZipFile.BaseName + "\" + $ZipFile.BaseName))
+                {
+                    Get-ChildItem -Include *.css,*.html -Recurse | ForEach-Object { 
+                        Copy-Item -Path $($UnzipPath + "\" + $ZipFile.BaseName + "\" + $ZipFile.BaseName + "\*") -Destination ($UnzipPath + "\" + $ZipFile.BaseName)
+                        Remove-Item -Path $($UnzipPath + "\" + $ZipFile.BaseName + "\" + $ZipFile.BaseName) -Force -Recurse
+                    }
+                }
+
+
+    echo $ZipFile.BaseName
+    
+}
+
+Get-ChildItem -Path "C:\Users\Richie\Desktop\TestStudentsSol" -File -Recurse |
+Where-Object {($_.Extension -ne ".html") -and ($_.Extension -ne ".css") } |
+Remove-Item -Force
+
+$path = "C:\Users\Richie\Desktop\TestStudentsSol"
+Get-ChildItem -Path $path -Recurse | Where-Object {(Get-ChildItem $_.FullName).Count -eq 0} |Foreach-object {Remove-item -Recurse -path $_.FullName }
