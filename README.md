@@ -16,4 +16,5 @@ It will then forcibly remove any files/folders that do not have the extension:
 Lines 2, 3, 37 & 41 are paths for your source/destination files
 
 Delete lines 37-42 if you do not need the second portion of the functionality, forcibly removing files/folders without the proper extension.
+
 Modify line 38 to whatever extensions you wish to delete.
